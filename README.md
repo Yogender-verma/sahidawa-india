@@ -18,7 +18,7 @@ _Built for Bharat. Not just India._
 
 <br/>
 
-[**Report a Bug**](https://github.com/YOUR_USERNAME/sahidawa-india/issues/new?template=bug_report.md) · [**Request a Feature**](https://github.com/YOUR_USERNAME/sahidawa-india/issues/new?template=feature_request.md) · [**Join Discord**](#community) · [**Read the Docs**](./docs/)
+[**Report a Bug**](https://github.com/RatLoopz/sahidawa-india/issues/new?template=bug_report.md) · [**Request a Feature**](https://github.com/RatLoopz/sahidawa-india/issues/new?template=feature_request.md) · [**Join Discord**](#community) · [**Read the Docs**](./docs/)
 
 </div>
 
@@ -67,28 +67,47 @@ India has a three-layer healthcare crisis that **no existing platform solves sim
 
 ## 🏗️ Architecture
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                     CLIENT (PWA)                            │
-│  Next.js 14 · Tailwind CSS · Workbox · ZXing · Leaflet.js   │
-└─────────────────────┬───────────────────────────────────────┘
-                      │ HTTPS
-┌─────────────────────▼───────────────────────────────────────┐
-│                  API GATEWAY                                │
-│         Node.js · Express · TypeScript · Redis              │
-└──────────┬─────────────────────────────┬────────────────────┘
-           │                             │
-┌──────────▼──────────┐    ┌─────────────▼──────────────────┐
-│    ML SERVICE       │    │        DATABASE                │
-│  FastAPI · Python   │    │  PostgreSQL · PostGIS · pgvec  │
-│  OpenCV · TF Lite   │    │  Supabase · Cloudinary CDN     │
-│  Whisper · LangChain│    └────────────────────────────────┘
-└─────────────────────┘
-           │
-┌──────────▼──────────────────────────────────────────────────┐
-│                    AI AGENT (Autonomous)                    │
-│     LangChain · Sarvam AI · CDSCO Poller · Push Notif       │
-└─────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TD
+    User([Rural Citizen / Patient]) -->|Scan Barcode / Voice Input| Client
+
+    subgraph "Frontend (PWA)"
+        Client[Next.js 15 Client\n(Tailwind, Workbox, ZXing)]
+    end
+
+    subgraph "Backend API Gateway"
+        API[Node.js Express API]
+        Cache[(Redis Cache)]
+        API <--> Cache
+    end
+
+    subgraph "Machine Learning Service"
+        ML[Python FastAPI Service]
+        AI[Sarvam AI / LangChain]
+        Vision[OpenCV / TF Lite]
+        Voice[Whisper ASR]
+        
+        ML --> AI
+        ML --> Vision
+        ML --> Voice
+    end
+
+    subgraph "Data & Storage"
+        DB[(Supabase PostgreSQL\nPostGIS + pgvector)]
+        CDN[(Cloudinary CDN)]
+    end
+
+    subgraph "Autonomous Agents"
+        Agent[LangChain CDSCO Poller]
+    end
+
+    Client -->|HTTPS API Calls| API
+    Client -->|Media Uploads| ML
+    API <-->|Read/Write| DB
+    ML <-->|Check Packages/Vectors| DB
+    ML -->|Upload Suspicious Images| CDN
+    Agent -->|Fetch Recalls| CDSCO[CDSCO Portal]
+    Agent -->|Update Alerts| DB
 ```
 
 ---
@@ -190,7 +209,7 @@ docker >= 24.0 (optional, for full stack)
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/YOUR_USERNAME/sahidawa-india.git
+git clone https://github.com/RatLoopz/sahidawa-india.git
 cd sahidawa-india
 
 # 2. Install frontend dependencies
@@ -210,7 +229,7 @@ npm run dev
 
 ```bash
 # Clone and start everything
-git clone https://github.com/YOUR_USERNAME/sahidawa-india.git
+git clone https://github.com/RatLoopz/sahidawa-india.git
 cd sahidawa-india
 
 cp .env.example .env
@@ -292,7 +311,7 @@ We love contributions! SahiDawa is built entirely by the community.
 
 ### Quick contribution guide
 
-1. Check [open issues](https://github.com/YOUR_USERNAME/sahidawa-india/issues) — look for `good-first-issue` label
+1. Check [open issues](https://github.com/RatLoopz/sahidawa-india/issues) — look for `good-first-issue` label
 2. Comment on the issue saying you want to work on it
 3. Fork → branch → code → test → PR
 4. A maintainer will review within 24 hours
@@ -364,7 +383,7 @@ We are also a **Cloudinary Bounty Partner project** — contributors who build f
 ## 💬 Community
 
 - **Discord:** [Join SahiDawa Discord](https://discord.gg/dvbDuJVwNa)
-- **GitHub Discussions:** [Discuss ideas & questions](https://github.com/YOUR_USERNAME/sahidawa-india/discussions)
+- **GitHub Discussions:** [Discuss ideas & questions](https://github.com/RatLoopz/sahidawa-india/discussions)
 
 ---
 
