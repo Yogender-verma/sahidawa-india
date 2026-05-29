@@ -94,23 +94,31 @@ def process_alert_pdf(pdf_url: str):
 
 def deduplicate_alerts(alerts: list) -> list:
     """
-    Checks the drug_alerts table via the API and returns only alerts
-    whose batch_number does not already exist in the database.
-    This makes the agent stateless — safe for serverless or CI environments.
+    Checks the drug_alerts table via the API for each alert's batch number
+    to see if it already exists, avoiding full-table scanning limit issues.
     """
-    try:
-        response = requests.get(ALERTS_API_URL, params={"limit": 100}, timeout=10)
-        response.raise_for_status()
-        existing = response.json().get("data", [])
-        existing_batches = {a.get("batch_number") for a in existing if a.get("batch_number")}
-    except Exception as e:
-        logging.warning(f"Could not fetch existing alerts for deduplication: {e}. Proceeding without dedup.")
-        return alerts
-
-    new_alerts = [a for a in alerts if a.get("batch_number") not in existing_batches]
+    new_alerts = []
+    for a in alerts:
+        batch = a.get("batch_number")
+        if not batch:
+            new_alerts.append(a)
+            continue
+        try:
+            # Query by batch_number specifically
+            response = requests.get(ALERTS_API_URL, params={"batch_number": batch, "limit": 1}, timeout=10)
+            response.raise_for_status()
+            existing = response.json().get("data", [])
+            if not existing:
+                new_alerts.append(a)
+            else:
+                logging.info(f"Skipping already-ingested alert with batch number: {batch}")
+        except Exception as e:
+            logging.warning(f"Could not verify existing alert for batch {batch}: {e}. Proceeding as new.")
+            new_alerts.append(a)
+            
     skipped = len(alerts) - len(new_alerts)
     if skipped:
-        logging.info(f"Skipping {skipped} already-ingested alert(s).")
+        logging.info(f"Deduplicated: skipped {skipped} already-ingested alert(s).")
     return new_alerts
 
 

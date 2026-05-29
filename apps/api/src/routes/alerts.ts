@@ -47,6 +47,7 @@ alertsRouter.get("/", async (req: Request, res: Response) => {
     const rawLimit = parseInt(req.query.limit as string, 10);
     const brand = req.query.brand as string;
     const region = req.query.region as string;
+    const batchNumber = req.query.batch_number as string;
 
     const page = isNaN(rawPage) || rawPage < 1 ? 1 : rawPage;
     const limit = isNaN(rawLimit) || rawLimit < 1 ? 10 : Math.min(rawLimit, 100);
@@ -60,6 +61,9 @@ alertsRouter.get("/", async (req: Request, res: Response) => {
     }
     if (region) {
         query = query.ilike("state", `%${region}%`);
+    }
+    if (batchNumber) {
+        query = query.eq("batch_number", batchNumber);
     }
 
     const { data, error, count } = await query
